@@ -1,36 +1,13 @@
-
-
 #include "lightsensor.h"
 
-int main(void)
-{
-    Lightsensor lightsensor = Lightsensor(2591);
-
-    int32_t lum = lightsensor.getLuminosity();
-
-    uint16_t ch0 = (lum & 0xFFFF);
-    uint16_t ch1 = (lum >> 16);
-
-    // uint32_t lux = lightsensor.calcLux(ch0, ch1);
-
-    printf("Full Spectrum: %zu\n", ch0);
-    printf("Infrared: %zu\n", ch1);
-    if ( ch0 >= ch1 )  printf("Visible: %zu\n", ch0-ch1);
-    // printf("Lux: %zu\n", lux);
-
-    return 0;
-}
-
-Lightsensor::Lightsensor(int32_t sensorId)
+LightSensor::LightSensor(int32_t sensorId)
 {
     _initialized = false;
     _sensorId = sensorId;
     _i2cId = 0;
-
-    init();
 }
 
-bool Lightsensor::init()
+bool LightSensor::init()
 {
     if (_i2cId == 0)
     {
@@ -44,9 +21,9 @@ bool Lightsensor::init()
         return false;
     }
 
-    wiringPiI2CWriteReg8(_i2cId, SENSOR_COMMAND | SENSOR_REGISTER_ENABLE, SENSOR_ENABLE_POWERON | SENSOR_ENABLE_AEN);
+    wiringPiI2CWriteReg8(_i2cId, SENSOR_REGISTER_ENABLE, SENSOR_ENABLE_POWERON | SENSOR_ENABLE_AEN);
 
-    if (wiringPiI2CReadReg8(_i2cId, 0x80 | 0x20 | 0x12) == 0x50) 
+    if (wiringPiI2CReadReg8(_i2cId, 0x80 | 0x20 | 0x12) == 0x50)
     {
         std::cout << "Successfully initialised I2C communication.\n";
     }
@@ -58,7 +35,7 @@ bool Lightsensor::init()
     return true;
 }
 
-void Lightsensor::start()
+void LightSensor::start()
 {
     if (!_initialized)
     {
@@ -67,22 +44,22 @@ void Lightsensor::start()
             return;
         }
     }
-    wiringPiI2CWriteReg8(_i2cId, SENSOR_COMMAND | SENSOR_REGISTER_ENABLE, SENSOR_ENABLE_POWERON | SENSOR_ENABLE_AEN);
+    wiringPiI2CWriteReg8(_i2cId, SENSOR_REGISTER_ENABLE, SENSOR_ENABLE_POWERON | SENSOR_ENABLE_AEN);
 }
 
-void Lightsensor::stop()
+void LightSensor::stop()
 {
-    if(!_initialized) 
+    if (!_initialized)
     {
-        if(!init())
+        if (!init())
         {
             return;
         }
     }
-    wiringPiI2CWriteReg8(_i2cId, SENSOR_COMMAND | SENSOR_REGISTER_ENABLE, SENSOR_ENABLE_POWEROFF);
+    wiringPiI2CWriteReg8(_i2cId, SENSOR_REGISTER_ENABLE, SENSOR_ENABLE_POWEROFF);
 }
 
-uint32_t Lightsensor::getLuminosity()
+uint32_t LightSensor::getLuminosity()
 {
     if (!_initialized)
     {
@@ -92,24 +69,45 @@ uint32_t Lightsensor::getLuminosity()
         }
     }
     start();
-    
-    uint16_t ch0data = wiringPiI2CReadReg16(_i2cId, SENSOR_COMMAND | SENSOR_REGISTER_C0DATAL);
-    ch0data <<= 16;
 
-    uint16_t ch1data = wiringPiI2CReadReg16(_i2cId, SENSOR_COMMAND | SENSOR_REGISTER_C1DATAL);
+    uint32_t ch0data = wiringPiI2CReadReg16(_i2cId, SENSOR_COMMAND | SENSOR_REGISTER_C0DATAL);
+    ch0data <<= 16;
+    uint32_t ch1data = wiringPiI2CReadReg16(_i2cId, SENSOR_COMMAND | SENSOR_REGISTER_C1DATAL);
     ch0data |= ch1data;
 
     stop();
+
     return ch0data;
 }
 
-uint32_t Lightsensor::calcLux(uint16_t ch0, uint16_t ch1)
+LightData LightSensor::getLightData()
 {
+    uint32_t lum = getLuminosity();
+    uint16_t infrared = (lum & 0xFFFF);
+    uint16_t fullSpectrum = (lum >> 16);
+    uint16_t visible = fullSpectrum - infrared;
+
+    return {
+        visible,
+        infrared,
+        fullSpectrum,
+        calcLux(fullSpectrum, infrared)};
+}
+
+uint32_t LightSensor::calcLux(uint16_t ch0, uint16_t ch1)
+{
+    uint16_t atime, again;
+    float cpl, lux1, lux2, lux;
+    uint32_t chan0, chan1;
+
     if ((ch0 == 0xFFFF) | (ch1 == 0xFFFF))
     {
         return 0;
     }
+    cpl = 1000 / SENSOR_LUX_DF;
 
-    return 0;
+    lux1 = ((float)ch0 - (SENSOR_LUX_COEFB * (float)ch1)) / cpl;
+    lux2 = ((SENSOR_LUX_COEFC * (float)ch0) - (SENSOR_LUX_COEFD * (float)ch1)) / cpl;
 
+    return lux1 > lux2 ? lux1 : lux2;
 }

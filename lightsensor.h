@@ -5,17 +5,18 @@
 #include <thread>
 #include <chrono>
 
-#define VISIBLE_LIGHT (0)
-#define INFRARED_LIGHT (1)
-#define FULLSPECTRUM_LIGHT (2)
-
 #define DEVICE_ID (0x29)
 #define SENSOR_COMMAND (0xA0)
 #define SENSOR_ENABLE_POWERON (0x01)
 #define SENSOR_ENABLE_POWEROFF (0x00)
-#define SENSOR_ENABLE_AEN (0x10)
+#define SENSOR_ENABLE_AEN (0x02)
 
-enum 
+#define SENSOR_LUX_DF (408.0F)
+#define SENSOR_LUX_COEFB (1.64F)
+#define SENSOR_LUX_COEFC (0.59F)
+#define SENSOR_LUX_COEFD (0.86F)
+
+enum
 {
     SENSOR_REGISTER_ENABLE = 0x00,
     SENSOR_REGISTER_C0DATAL = 0x14,
@@ -24,15 +25,23 @@ enum
     SENSOR_REGISTER_C1DATAH = 0x17
 };
 
-class Lightsensor
+struct LightData
+{
+    uint16_t visible;
+    uint16_t infrared;
+    uint16_t fullSpectrum;
+    uint32_t lux;
+};
+
+class LightSensor
 {
 public:
-    Lightsensor(int32_t sensorId = -1);
-    uint32_t getLuminosity();
-    uint32_t calcLux(uint16_t ch0, uint16_t ch1);
+    LightSensor(int32_t sensorId = -1);
+    LightData getLightData();
 
 private:
-    uint16_t read16(uint8_t reg);
+    uint32_t getLuminosity();
+    uint32_t calcLux(uint16_t ch0, uint16_t ch1);
     bool init();
     void start();
     void stop();
