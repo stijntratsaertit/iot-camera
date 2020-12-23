@@ -1,19 +1,19 @@
 
-#include "lightsensor.h"
-#include "wiringPi.h"
+#include "light-sensor.h"
+#include "movement-sensor.h"
 
 int main(void)
 {
 
     LightSensor lightSensor(2591);
+    MovementSensor movementSensor(4);
 
     while(true)
     {
         LightData data = lightSensor.getLightData();
-                
-        printf("Visible: %zu\n", data.visible);
-        printf("Infrared: %zu\n", data.infrared);
-        printf("Full Spectrum: %zu\n", data.fullSpectrum);
+        bool isDetecting = movementSensor.isDetecting();
+        
+        printf("Is detecting: %d\n", isDetecting);
         printf("Lux: %zu\n", data.lux);
 
         delay(1000);

@@ -1,4 +1,4 @@
-#include "lightsensor.h"
+#include "light-sensor.h"
 
 LightSensor::LightSensor(int32_t sensorId)
 {
