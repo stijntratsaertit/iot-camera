@@ -2,13 +2,13 @@
 
 using namespace std;
 
+#include <string>
+#include <iostream>
+#include <fstream>
+
 Camera::Camera()
 {
-    _http.put_AwsAccessKey(std::getenv("AWSAK"));
-    _http.put_AwsSecretKey(std::getenv("AWSSK"));
-    _bucketName = "camera-footage";
-    _path = "/";
-    _contentType = "mp4";
+    _videoLength = "5000";
 }
 
 void Camera::recordAndSave()
@@ -16,9 +16,9 @@ void Camera::recordAndSave()
     std::time_t time = std::time(NULL);
     _currentFile << "vid-" << time;
     record();
-    sleep(30);
+    sleep(5);
     convertVideo();
-    sleep(10);
+    sleep(5);
     save();
 }
 
@@ -26,7 +26,7 @@ void Camera::record()
 {
     std::ostringstream command;
     std::cout << _currentFile.str() << "\n";
-    command << "raspivid -o " << _currentFile.str() << ".h264 -t 60000";
+    command << "raspivid -o " << _currentFile.str() << ".h264 -t " << _videoLength;
     system(command.str().c_str());
 }
 
@@ -39,15 +39,11 @@ void Camera::convertVideo()
 
 void Camera::save()
 {
-    bool success = _http.S3_UploadFile(_path, _contentType, _bucketName, _currentFile.str().c_str());
+    std::ostringstream command;
+    command << "/usr/bin/python3.7 uploader.py " << _currentFile.str() << ".mp4 " << _currentFile.str() << ".h264";
+    system(command.str().c_str());
 
-    if (success != true)
-    {
-        std::cout << _http.lastErrorText() << "\r\n";
-    }
-    else
-    {
-        std::cout << "File uploaded."
-                  << "\r\n";
-    }
+    std::ostringstream deleteCommand;
+    deleteCommand << "rm " << _currentFile.str() << ".mp4";
+    system(deleteCommand.str().c_str());
 }

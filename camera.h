@@ -6,7 +6,6 @@
 #include <iostream>
 #include <unistd.h>
 #include <sstream>
-#include <CkHttp.h>
 
 using namespace std;
 
@@ -22,8 +21,5 @@ private:
     void save();
 
     std::ostringstream _currentFile;
-    CkHttp _http;
-    const char* _bucketName;
-    const char* _path;
-    const char* _contentType;
+    std::string _videoLength;
 };
