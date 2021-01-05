@@ -1,4 +1,8 @@
+import threading
+from gps import GPS
 import time
+from queue import Queue
+import json
 from awscrt import io, mqtt
 from awscrt.auth import AwsCredentialsProvider
 from awsiot import mqtt_connection_builder
@@ -36,11 +40,6 @@ def on_message_received(topic, payload, **kwargs):
     if "camera_request" in payload:
         with open('camera_request.txt', 'w') as f:
             f.write("1")
-        # mqtt_connection.publish(
-        #     topic="camera",
-        #     payload=f"response_camera_state: {get_camera_state()}",
-        #     qos=mqtt.QoS.AT_LEAST_ONCE
-        # )
 
 
 if __name__ == "__main__":
@@ -50,6 +49,10 @@ if __name__ == "__main__":
     client = IotShadowClient(mqtt_connection)
     connected_f.result()
     print("Connected")
+
+    gps_data_queue = Queue()
+    gps = GPS()
+    threading.Thread(target=gps.run, args=[gps_data_queue]).start()
 
     start_time = time.time()
 
@@ -63,10 +66,19 @@ if __name__ == "__main__":
 
     while True:
         if int(time.time() - start_time) % 5 == 0:
+            data = json.dumps({
+                "camera_state": int(get_camera_state())
+            })
             mqtt_connection.publish(
                 topic="camera",
-                payload=f"camera_state: {get_camera_state()}",
+                payload=data,
                 qos=mqtt.QoS.AT_LEAST_ONCE
             )
-        
+        if not gps_data_queue.empty():
+            mqtt_connection.publish(
+                topic="camera",
+                payload=json.dumps(gps_data_queue.get()),
+                qos=mqtt.QoS.AT_LEAST_ONCE
+            )
+
         time.sleep(1)
