@@ -9,8 +9,6 @@ MovementSensor::MovementSensor(int pin)
 
 void MovementSensor::init()
 {
-    wiringPiSetup();
-
     pinMode(_pin, INPUT);
 }
 

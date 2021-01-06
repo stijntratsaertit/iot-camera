@@ -6,6 +6,8 @@ Camera::Camera()
 {
     changeState("0");
     _videoLength = "5000";
+    _ledPin = 6;
+    pinMode(_ledPin, OUTPUT);
 }
 
 void Camera::recordAndSave()
@@ -17,6 +19,8 @@ void Camera::recordAndSave()
     convertVideo();
     sleep(5);
     save();
+    _currentFile.str("");
+    _currentFile.clear();
 }
 
 void Camera::record()
@@ -39,16 +43,17 @@ void Camera::convertVideo()
 void Camera::save()
 {
     ostringstream command;
-    command << "/usr/bin/python3.7 uploader.py " << _currentFile.str() << ".mp4 " << _currentFile.str() << ".h264";
+    command << "/usr/bin/python3.7 uploader.py " << _currentFile.str() << ".mp4";
     system(command.str().c_str());
 
     ostringstream deleteCommand;
-    deleteCommand << "rm " << _currentFile.str() << ".mp4";
+    deleteCommand << "rm " << _currentFile.str() << ".mp4 " << _currentFile.str() << ".h264";
     system(deleteCommand.str().c_str());
 }
 
 void Camera::changeState(string state)
 {
+    ledEnabled(state == "0" ? false : true);
     _stateFile.open("camera_recording.txt", ios::trunc);
     _stateFile << state;
     _stateFile.close();
@@ -63,4 +68,9 @@ int Camera::requestToRecord()
     _requestFile << "0";
     _requestFile.close();
     return isRequested;
+}
+
+void Camera::ledEnabled(bool value)
+{
+    digitalWrite(_ledPin, value ? 1 : 0);
 }

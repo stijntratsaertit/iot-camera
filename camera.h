@@ -23,9 +23,11 @@ private:
     void convertVideo();
     void save();
     void changeState(string state);
+    void ledEnabled(bool value);
 
     ostringstream _currentFile;
     string _videoLength;
     ofstream _stateFile;
     fstream _requestFile;
+    int _ledPin;
 };
