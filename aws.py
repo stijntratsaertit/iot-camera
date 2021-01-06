@@ -1,12 +1,14 @@
+import json
 import threading
-from gps import GPS
 import time
 from queue import Queue
-import json
+
 from awscrt import io, mqtt
 from awscrt.auth import AwsCredentialsProvider
 from awsiot import mqtt_connection_builder
 from awsiot.iotshadow import IotShadowClient
+
+from gps import GPS
 
 io.init_logging(getattr(io.LogLevel, "Error"), 'stderr')
 event_loop_group = io.EventLoopGroup(1)
