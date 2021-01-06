@@ -18,11 +18,8 @@ class GPS:
             self.gps.update()
 
             current = time.monotonic()
-            if current - last_print >= 60.0:
+            if current - last_print >= 3.0:
                 last_print = current
-                if not self.gps.has_fix:
-                    print('Waiting for fix...')
-                    continue
                 queue.put(
                     {"latitude": "{0:.6f}".format(self.gps.latitude),
                      "longitude": "{0:.6f}".format(self.gps.longitude)}

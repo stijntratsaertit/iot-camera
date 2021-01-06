@@ -6,7 +6,7 @@ from environs import Env
 
 def upload(file_name):
     try:
-        response = s3.upload_file(file_name, 'camera-footage', file_name)
+        response = s3.upload_file("/home/stijn/iot/" + file_name, 'camera-footage', file_name)
     except ClientError as e:
         logging.error(e)
         return False

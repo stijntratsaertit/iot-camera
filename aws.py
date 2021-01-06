@@ -25,14 +25,14 @@ def get_connection() -> mqtt.Connection:
         region="eu-west-3",
         credentials_provider=credentials_provider,
         websocket_proxy_options=None,
-        ca_filepath="./certs/RootCA3.pem",
+        ca_filepath="/home/stijn/iot/certs/RootCA3.pem",
         client_id="RPI",
         clean_session=False,
         keep_alive_secs=6)
 
 
 def get_camera_state() -> str:
-    with open('camera_recording.txt') as f:
+    with open('/home/stijn/iot/camera_recording.txt') as f:
         return f.read()
 
 
@@ -40,7 +40,7 @@ def on_message_received(topic, payload, **kwargs):
     payload = payload.decode("utf-8")
     print(f"Received message from topic {topic}: {payload}")
     if "camera_request" in payload:
-        with open('camera_request.txt', 'w') as f:
+        with open('/home/stijn/iot/camera_request.txt', 'w') as f:
             f.write("1")
 
 

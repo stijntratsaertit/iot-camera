@@ -2,7 +2,6 @@
 
 int main(void)
 {
-    int requestToRecordTimerCount = 0;
     int movementCount = 0;
     int gasCount = 0;
     int lightCount = 0;
@@ -16,14 +15,12 @@ int main(void)
 
     while (true) 
     {
-        bool firstCondition = movementCount >= 5 || lightCount >= 5 || gasCount >= 5;
-        bool secondCondition = camera.requestToRecord() && requestToRecordTimerCount == 10;
-
-        if (firstCondition || secondCondition)
+        bool triggerCondition = movementCount >= 5 || lightCount >= 5 || gasCount >= 5;
+        
+        if (triggerCondition || camera.requestToRecord() == 0)
         {
             printTrigger(movementCount, gasCount, lightCount);
             camera.recordAndSave();
-            requestToRecordTimerCount = 0;
             movementCount = 0;
             lightCount = 0;
             gasCount = 0;
@@ -39,7 +36,6 @@ int main(void)
         if (lightSensor.getLightData().visible > 150) lightCount++;
         else lightCount = 0;
 
-        requestToRecordTimerCount++;
         delay(1000);
     }
 
@@ -57,4 +53,5 @@ void printTrigger(int movementCounter, int gasCounter, int lightCounter)
     if (lightCounter >= 5)
         std::cout << "Camera triggered by light.\n";
         return;
+    std::cout << "Camera triggered by request.\n";
 }
