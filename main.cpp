@@ -16,11 +16,9 @@ int main(void)
 
     while (true) 
     {
-        LightData light = lightSensor.getLightData();
-        bool isDetecting = movementSensor.isDetecting();
-
         bool firstCondition = movementCount >= 5 || lightCount >= 5 || gasCount >= 5;
         bool secondCondition = camera.requestToRecord() && requestToRecordTimerCount == 10;
+
         if (firstCondition || secondCondition)
         {
             printTrigger(movementCount, gasCount, lightCount);
@@ -32,17 +30,17 @@ int main(void)
             continue;
         }
 
-        if (isDetecting) movementCount++;
+        if (movementSensor.isDetecting()) movementCount++;
         else movementCount = 0;
 
         if (!gasSensor.get()) gasCount++;
         else gasCount = 0;
 
-        if (light.visible > 150) lightCount++;
+        if (lightSensor.getLightData().visible > 150) lightCount++;
         else lightCount = 0;
 
-        delay(1000);
         requestToRecordTimerCount++;
+        delay(1000);
     }
 
     return 0;

@@ -12,6 +12,7 @@ Camera::Camera()
 
 void Camera::recordAndSave()
 {
+    changeState("1");
     time_t time = std::time(NULL);
     _currentFile << "vid-" << time;
     record();
@@ -21,16 +22,15 @@ void Camera::recordAndSave()
     save();
     _currentFile.str("");
     _currentFile.clear();
+    changeState("0");
 }
 
 void Camera::record()
 {
-    changeState("1");
     ostringstream command;
     cout << _currentFile.str() << "\n";
     command << "raspivid -o " << _currentFile.str() << ".h264 -t " << _videoLength;
     system(command.str().c_str());
-    changeState("0");
 }
 
 void Camera::convertVideo()
@@ -72,5 +72,5 @@ int Camera::requestToRecord()
 
 void Camera::ledEnabled(bool value)
 {
-    digitalWrite(_ledPin, value ? 1 : 0);
+    digitalWrite(_ledPin, value ? HIGH : LOW);
 }
