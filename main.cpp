@@ -19,18 +19,18 @@ int main(void)
         
         if (triggerCondition || camera.requestToRecord() == 0)
         {
-            printTrigger(movementCount, gasCount, lightCount);
-            camera.recordAndSave();
+            string reason = getReason(movementCount, gasCount, lightCount);
+            camera.recordAndSave(reason);
             movementCount = 0;
             lightCount = 0;
             gasCount = 0;
             continue;
         }
 
-        if (movementSensor.isDetecting()) movementCount++;
+        if (movementSensor.isDetecting() == 1) movementCount++;
         else movementCount = 0;
 
-        if (!gasSensor.get()) gasCount++;
+        if (gasSensor.get() == 1) gasCount++;
         else gasCount = 0;
 
         if (lightSensor.getLightData().visible > 150) lightCount++;
@@ -42,16 +42,13 @@ int main(void)
     return 0;
 }
 
-void printTrigger(int movementCounter, int gasCounter, int lightCounter)
+string getReason(int movementCounter, int gasCounter, int lightCounter)
 {
     if (movementCounter >= 5) 
-        std::cout << "Camera triggered by movement.\n";
-        return;
+        return "movement";
     if (gasCounter >= 5)
-        std::cout << "Camera triggered by gas.\n";
-        return;
+        return "gas";
     if (lightCounter >= 5)
-        std::cout << "Camera triggered by light.\n";
-        return;
-    std::cout << "Camera triggered by request.\n";
+        return "light";
+    return "request";
 }

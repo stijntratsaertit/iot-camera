@@ -5,5 +5,6 @@
 #include "camera.h"
 #include "gas-sensor.h"
 
+
 int main();
-void printTrigger(int movementCounter, int gasCounter, int lightCounter);
+string getReason(int movementCounter, int gasCounter, int lightCounter);

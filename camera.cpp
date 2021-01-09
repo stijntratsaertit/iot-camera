@@ -10,11 +10,11 @@ Camera::Camera()
     pinMode(_ledPin, OUTPUT);
 }
 
-void Camera::recordAndSave()
+void Camera::recordAndSave(string reason)
 {
     changeState("1");
     time_t time = std::time(NULL);
-    _currentFile << "vid-" << time;
+    _currentFile << "vid-" << time << "-" << reason;
     record();
     sleep(5);
     convertVideo();
