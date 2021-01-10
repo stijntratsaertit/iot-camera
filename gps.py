@@ -1,3 +1,5 @@
+from queue import Queue
+import threading
 import time
 import serial
 import adafruit_gps
@@ -12,17 +14,27 @@ class GPS:
         self.gps.send_command(b'PMTK220,1000')
 
     def run(self, queue):
-        last_print = time.monotonic()
+        first = True
+        last_time = time.monotonic()
         while True:
-
             self.gps.update()
-
             current = time.monotonic()
-            if current - last_print >= 3.0:
-                last_print = current
+            if current - last_time >= 60 or first:
+                first = False
+                last_time = current
+                if not self.gps.has_fix:
+                    queue.put({"latitude": None, "longitude": None})
+                    continue
                 queue.put(
                     {"latitude": "{0:.6f}".format(self.gps.latitude),
                      "longitude": "{0:.6f}".format(self.gps.longitude)}
-                    if self.gps.has_fix
-                    else {"latitude": None, "longitude": None}
                 )
+
+
+if __name__ == "__main__":
+    gps = GPS()
+    q = Queue()
+    threading.Thread(target=gps.run, args=[q]).start()
+    while True:
+        if not q.empty():
+            print(q.get())
