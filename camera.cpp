@@ -5,7 +5,7 @@ using namespace std;
 Camera::Camera()
 {
     changeState("0");
-    _videoLength = "5000";
+    _videoLength = "15000";
     _ledPin = 6;
     pinMode(_ledPin, OUTPUT);
 }

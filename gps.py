@@ -19,7 +19,7 @@ class GPS:
         while True:
             self.gps.update()
             current = time.monotonic()
-            if current - last_time >= 60 or first:
+            if current - last_time >= 5 or first:
                 first = False
                 last_time = current
                 if not self.gps.has_fix:
