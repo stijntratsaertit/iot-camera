@@ -36,13 +36,11 @@ def get_camera_state() -> str:
         return f.read()
 
 
-def on_message_received(topic, payload, **kwargs):
+def on_request_received(topic, payload, **kwargs):
     payload = payload.decode("utf-8")
-    print(f"Received message from topic {topic}: {payload}")
-    if "camera_request" in payload:
+    if json.loads(payload)["data"] == 1:
         with open('/home/stijn/iot/camera_request.txt', 'w') as f:
             f.write("1")
-
 
 if __name__ == "__main__":
     print("Connecting")
@@ -56,29 +54,26 @@ if __name__ == "__main__":
     gps = GPS()
     threading.Thread(target=gps.run, args=[gps_data_queue]).start()
 
-    start_time = time.time()
-
     subscribe_f, packet_id = mqtt_connection.subscribe(
-        topic="camera",
+        topic="camera/request",
         qos=mqtt.QoS.AT_LEAST_ONCE,
-        callback=on_message_received
+        callback=on_request_received
     )
     subscribe_result = subscribe_f.result()
-    print(f"Subscribed to camera")
+    print(f"Subscribed to camera/request")
+
+    start_time = time.time()
 
     while True:
-        if int(time.time() - start_time) % 5 == 0:
-            data = json.dumps({
-                "camera_state": int(get_camera_state())
-            })
+        if int(time.time() - start_time) % 5 == 0 or int(time.time() - start_time) == 0:
             mqtt_connection.publish(
-                topic="camera",
-                payload=data,
+                topic="camera/state",
+                payload=json.dumps({ "data": int(get_camera_state()) }),
                 qos=mqtt.QoS.AT_LEAST_ONCE
             )
         if not gps_data_queue.empty():
             mqtt_connection.publish(
-                topic="camera",
+                topic="camera/location",
                 payload=json.dumps(gps_data_queue.get()),
                 qos=mqtt.QoS.AT_LEAST_ONCE
             )
