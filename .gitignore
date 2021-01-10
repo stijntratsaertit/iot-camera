@@ -4,3 +4,4 @@ certs
 camera_recording.txt
 camera_request.txt
 *pycache*
+vid*

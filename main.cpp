@@ -30,7 +30,7 @@ int main(void)
         if (movementSensor.isDetecting() == 1) movementCount++;
         else movementCount = 0;
 
-        if (gasSensor.get() == 1) gasCount++;
+        if (gasSensor.get() == 0) gasCount++;
         else gasCount = 0;
 
         if (lightSensor.getLightData().visible > 150) lightCount++;
