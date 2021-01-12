@@ -65,7 +65,7 @@ if __name__ == "__main__":
     start_time = time.time()
 
     while True:
-        if int(time.time() - start_time) % 5 == 0 or int(time.time() - start_time) == 0:
+        if int(time.time() - start_time) % 2 == 0 or int(time.time() - start_time) == 0:
             mqtt_connection.publish(
                 topic="camera/state",
                 payload=json.dumps({ "data": int(get_camera_state()) }),

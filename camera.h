@@ -16,7 +16,7 @@ class Camera
 public:
     Camera();
     void recordAndSave(string reason);
-    int requestToRecord();
+    bool requestToRecord();
 
 private:
     void record();

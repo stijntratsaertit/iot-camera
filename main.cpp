@@ -17,7 +17,7 @@ int main(void)
     {
         bool triggerCondition = movementCount >= 5 || lightCount >= 5 || gasCount >= 5;
         
-        if (triggerCondition || camera.requestToRecord() == 0)
+        if (triggerCondition || camera.requestToRecord())
         {
             string reason = getReason(movementCount, gasCount, lightCount);
             camera.recordAndSave(reason);
